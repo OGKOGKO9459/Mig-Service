@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Mig - Service</title>
+    <link rel="icon" type="image/png" href="img/logoK.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Baufra', 'Arial', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0a0a, #000000);
+            overflow-x: hidden;
+            padding-top: 80px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(255, 255, 255, 0.02) 0px,
+                    rgba(255, 255, 255, 0.02) 1px,
+                    transparent 1px,
+                    transparent 80px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 255, 255, 0.015) 0px,
+                    rgba(255, 255, 255, 0.015) 1px,
+                    transparent 1px,
+                    transparent 60px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.gradient-bg {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f1a 100%);
+            transition: background 0.3s ease;
+        }
+
+        @font-face {
+            font-family: 'Baufra';
+            src: local('Baufra Regular'), local('Baufra-Regular');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Baufra';
+            src: local('Baufra Semi Bold'), local('Baufra-SemiBold');
+            font-weight: 600;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Baufra';
+            src: local('Baufra Demi Bold'), local('Baufra-DemiBold');
+            font-weight: 700;
+            font-display: swap;
+        }
+
+        .top-bar-wrapper {
+            width: 100%;
+            background-color: #373535;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .top-bar-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 80px;
+            background-color: #2a2828;
+            z-index: 0;
+        }
+
+        .top-bar-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 80px;
+            background-color: #2a2828;
+            z-index: 0;
+        }
+
+        .top-bar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1440px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-bar {
+            background-color: #373535;
+            height: 80px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 70px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 400;
+            font-size: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .nav-link:hover {
+            background-color: #1f1e1e;
+            color: #ffffff;
+        }
+
+        .burger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 6px;
+            z-index: 101;
+        }
+
+        .burger span {
+            width: 30px;
+            height: 3px;
+            background-color: white;
+            border-radius: 3px;
+            transition: 0.3s ease;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 80px;
+            left: -100%;
+            width: auto;
+            min-width: 200px;
+            max-width: 260px;
+            background-color: transparent;
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: left 0.3s ease;
+            padding: 20px 15px;
+        }
+
+        .mobile-menu.active {
+            left: 0;
+        }
+
+        .mobile-menu .nav-link {
+            text-align: center;
+            font-size: 18px;
+            padding: 10px 20px;
+            color: white;
+            text-decoration: none;
+            display: block;
+            background-color: #2a2828;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu .nav-link:hover {
+            background-color: #06AD46;
+            transform: scale(1.02);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            padding: 0 70px;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            border-radius: 0;
+            margin: 0;
+            box-shadow: none;
+        }
+
+        .divider-gray {
+            background-color: #323232;
+            width: 100%;
+            height: 18px;
+            margin: 0;
+        }
+
+        .section {
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
+        .section-title {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 600;
+            font-size: 42px;
+            line-height: 1.2;
+            margin-left: 0;
+            margin-bottom: 30px;
+            color: #ffffff;
+        }
+
+        .about-text {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 400;
+            font-size: 20px;
+            line-height: 1.45;
+            color: #e0e0e0;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 40px;
+        }
+
+        .services-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .service-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 0;
+            text-align: center;
+            transition: 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden;
+            width: calc(25% - 23px);
+            min-width: 220px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(6,173,70,0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .service-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .service-card p {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 400;
+            font-size: 17px;
+            line-height: 1.4;
+            color: #f0f0f0;
+            padding: 16px 12px 20px;
+            margin: 0;
+        }
+
+        .form-section {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            margin: 40px auto 60px auto;
+            padding: 50px 40px;
+            border: 1px solid rgba(255,255,255,0.08);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            scroll-margin-top: 100px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .tech-message {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 500;
+            font-size: 22px;
+            color: #ffd966;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .tech-sub {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 400;
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 35px;
+        }
+
+        .direct-contacts {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .copy-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.6);
+            padding: 12px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.15);
+            position: relative;
+        }
+
+        .copy-item:hover {
+            background: #06AD46;
+            border-color: #06AD46;
+            transform: scale(1.02);
+        }
+
+        .copy-icon {
+            font-size: 22px;
+        }
+
+        .copy-text {
+            font-family: 'Baufra', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            color: white;
+        }
+
+        .copy-tip {
+            font-family: 'Baufra', sans-serif;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 25px;
+        }
+
+        .toast-tooltip {
+            position: absolute;
+            background-color: #06AD46;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-family: 'Baufra', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        .toast-tooltip.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #06AD46 transparent transparent transparent;
+        }
+
+        .footer-contacts {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            margin-top: 40px;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-family: 'Baufra', sans-serif;
+            font-weight: 400;
+            font-size: 18px;
+            cursor: default;
+        }
+
+        .contact-icon {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .contact-text {
+            color: white;
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (max-width: 1024px) {
+            .container { padding: 0 30px; }
+            .service-card { width: calc(33.33% - 20px); }
+        }
+
+        @media (max-width: 900px) {
+            .service-card { width: calc(50% - 15px); }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar { padding: 0 20px; }
+            .nav-links { display: none; }
+            .burger { display: flex; }
+            .container { padding: 0 20px; }
+            .section-title { font-size: 32px; text-align: center; }
+            .about-text { font-size: 16px; text-align: center; }
+            .service-card { width: calc(50% - 10px); min-width: unset; }
+            .form-section { width: 100%; padding: 25px 20px; }
+            .tech-message { font-size: 16px; }
+            .tech-sub { font-size: 14px; }
+            .direct-contacts { flex-direction: column; align-items: stretch; gap: 15px; }
+            .copy-item { justify-content: center; }
+            .footer-contacts { flex-direction: column; gap: 20px; }
+            .mobile-menu { min-width: 180px; max-width: 220px; padding: 15px 12px; }
+            .mobile-menu .nav-link { font-size: 16px; padding: 8px 16px; }
+        }
+
+        @media (max-width: 550px) {
+            .service-card { width: 100%; }
+            .section-title { font-size: 28px; }
+            .about-text { font-size: 14px; }
+            .service-img { height: 200px; }
+            .copy-text { font-size: 14px; }
+            .mobile-menu { min-width: 160px; max-width: 200px; padding: 12px 10px; }
+            .mobile-menu .nav-link { font-size: 14px; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar-wrapper">
+        <div class="top-bar-container">
+            <div class="top-bar">
+                <div class="nav-links">
+                    <a href="#" class="nav-link">Главная</a>
+                    <a href="#about" class="nav-link">О компании</a>
+                    <a href="#services" class="nav-link">Услуги</a>
+                    <a href="#contact" class="nav-link">Записаться</a>
+                </div>
+                <div class="burger" id="burgerBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" class="nav-link">Главная</a>
+        <a href="#about" class="nav-link">О компании</a>
+        <a href="#services" class="nav-link">Услуги</a>
+        <a href="#contact" class="nav-link">Записаться</a>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container">
+        <img class="hero-img fade-up" src="img/GAZEL (2).jpg" alt="Mig - Service">
+
+        <div class="divider-gray fade-up"></div>
+
+        <section id="about" class="section fade-up">
+            <h2 class="section-title">О компании</h2>
+            <div class="about-text">
+                Выполняем весь спектр ремонтных работ и обслуживание автомобилей семейства «Газель. Газель Некст. Газель Бизнес. Соболь. Валдаи. NN. УАЗ. ВАЗ. Газон».<br><br>
+                Капитальный ремонт двигателя «Cummins (Камминс)» YM3. Эвотек. Опыт работы мастера 15 лет.<br><br>
+                Сотрудничаем и с юридическими лицами по Безналу, с автопарками (на индивидуальных условиях).<br><br>
+                Перед приездом, желательно написать или набрать по указанному в объявлении номеру, спасибо за понимание.
+            </div>
+        </section>
+
+        <section id="services" class="section" style="padding-top: 0;">
+            <h2 class="section-title fade-up">Услуги</h2>
+            
+            <div class="services-wrapper fade-up">
+                <a href="index copy 2.html" class="service-card"><img class="service-img" src="img/ph1.png" alt="услуга"><p>Диагностика и ремонт подвески</p></a>
+                <a href="index copy 3.html" class="service-card"><img class="service-img" src="img/ph2.png" alt="услуга"><p>Диагностика и ремонт двигателя</p></a>
+                <a href="index copy 4.html" class="service-card"><img class="service-img" src="img/ph3.png" alt="услуга"><p>Диагностика комп-ная любого авто</p></a>
+                <a href="index copy 5.html" class="service-card"><img class="service-img" src="img/ph4.png" alt="услуга"><p>Эндоскопия мотора любого авто</p></a>
+                <a href="index copy 6.html" class="service-card"><img class="service-img" src="img/ph5.png" alt="услуга"><p>Ремонт кпп газель</p></a>
+                <a href="index copy 7.html" class="service-card"><img class="service-img" src="img/ph6.png" alt="услуга"><p>Ремонт моторов эмз 406.405.409. YM3 4216</p></a>
+                <a href="index copy 8.html" class="service-card"><img class="service-img" src="img/ph7.png" alt="услуга"><p>Диагностика и ремонт ходовой части</p></a>
+                <a href="index copy 9.html" class="service-card"><img class="service-img" src="img/ph8.png" alt="услуга"><p>Сварочные работы</p></a>
+                <a href="index copy 10.html" class="service-card"><img class="service-img" src="img/ph9.png" alt="услуга"><p>Ремонт редукторов</p></a>
+                <a href="index copy 11.html" class="service-card"><img class="service-img" src="img/ph10.png" alt="услуга"><p>Диагностика и ремонт тормозной системы</p></a>
+                <a href="index copy 12.html" class="service-card"><img class="service-img" src="img/ph11.png" alt="услуга"><p>Ремонт газели любой сложности</p></a>
+            </div>
+        </section>
+
+        <section id="contact" class="section fade-up" style="padding-bottom: 40px;">
+            <h2 class="section-title">Записаться</h2>
+            <div class="form-section">
+                <div class="tech-message">
+                    🔧 Извините, над этой функцией ведутся технические работы
+                </div>
+                <div class="tech-sub">
+                    А пока что можете связаться с нами напрямую:
+                </div>
+                <div class="direct-contacts">
+                    <div class="copy-item" data-copy="+79282405739">
+                        <span class="copy-icon">📞</span>
+                        <span class="copy-text">+7 (928) 240-57-39</span>
+                    </div>
+                    <div class="copy-item" data-copy="MigServisss@yandex.ru">
+                        <span class="copy-icon">✉️</span>
+                        <span class="copy-text">MigServisss@yandex.ru</span>
+                    </div>
+                </div>
+                <div class="copy-tip">
+                    👆 Нажмите на номер или почту, чтобы скопировать
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="footer-contacts fade-up">
+        <div class="contact-item">
+            <img class="contact-icon" src="img/r phone.png" alt="телефон">
+            <span class="contact-text">+7 (928) 240-57-39</span>
+        </div>
+        <div class="contact-item">
+            <img class="contact-icon" src="img/r mail.png" alt="почта">
+            <span class="contact-text">MigServisss@yandex.ru</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            function checkGradient() {
+                const servicesSection = document.getElementById('services');
+                if (servicesSection) {
+                    const rect = servicesSection.getBoundingClientRect();
+                    if (rect.bottom <= 0) {
+                        document.body.classList.add('gradient-bg');
+                    } else {
+                        document.body.classList.remove('gradient-bg');
+                    }
+                }
+            }
+
+            function checkVisibility() {
+                document.querySelectorAll('.fade-up').forEach(el => {
+                    if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+                        el.classList.add('visible');
+                    }
+                });
+            }
+
+            function showTooltip(element, message) {
+                let tooltip = element.querySelector('.toast-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'toast-tooltip';
+                    element.style.position = 'relative';
+                    element.appendChild(tooltip);
+                }
+                tooltip.textContent = message || '✅ Скопировано!';
+                tooltip.classList.add('show');
+                setTimeout(() => {
+                    tooltip.classList.remove('show');
+                }, 2000);
+            }
+
+            function copyToClipboard(text, element) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showTooltip(element, '✅ Скопировано!');
+                }).catch(() => {
+                    showTooltip(element, '❌ Ошибка');
+                });
+            }
+
+            function initCopyButtons() {
+                document.querySelectorAll('.copy-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const textToCopy = this.getAttribute('data-copy');
+                        if (textToCopy) copyToClipboard(textToCopy, this);
+                    });
+                });
+            }
+
+            function initMobileMenu() {
+                const burger = document.getElementById('burgerBtn');
+                const mobileMenu = document.getElementById('mobileMenu');
+                const overlay = document.getElementById('overlay');
+                if (!burger || !mobileMenu || !overlay) return;
+                
+                function closeMenu() {
+                    mobileMenu.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+                function openMenu() {
+                    mobileMenu.classList.add('active');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                burger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    mobileMenu.classList.contains('active') ? closeMenu() : openMenu();
+                });
+                overlay.addEventListener('click', closeMenu);
+                mobileMenu.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', closeMenu));
+            }
+
+            window.addEventListener('load', () => {
+                checkGradient();
+                checkVisibility();
+                initCopyButtons();
+                initMobileMenu();
+            });
+            window.addEventListener('scroll', () => {
+                checkGradient();
+                checkVisibility();
+            });
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    document.getElementById('mobileMenu')?.classList.remove('active');
+                    document.getElementById('overlay')?.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
